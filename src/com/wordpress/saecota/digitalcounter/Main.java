@@ -1,11 +1,15 @@
+package com.wordpress.saecota.digitalcounter;
+
 import java.util.Scanner;
 
 public class Main {
-  private static final int[] NUMBERS_LINE = {6, 2, 5, 5, 4, 5, 6, 3, 7, 5};
+  private static final int[] NUMBERS_LINE = { 6, 2, 5, 5, 4, 5, 6, 3, 7, 5 };
+
+
 
   public static void main(final String[] args) {
 
-    try (final Scanner scanner = new Scanner(System.in)) {
+    try ( final Scanner scanner = new Scanner(System.in) ) {
       final String input = scanner.nextLine();
       final int N = input.length();
       final String format = "%0" + N + "d";
@@ -20,6 +24,8 @@ public class Main {
       System.out.println(elapsedTime);
     }
   }
+
+
 
   private static int countLines(final String number) {
     int target = 0;
