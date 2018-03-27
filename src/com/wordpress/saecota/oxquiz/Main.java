@@ -1,24 +1,33 @@
 package com.wordpress.saecota.oxquiz;
 
-import java.util.Scanner;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 
 public class Main {
   public static void main(final String[] args) {
-    try ( final Scanner scanner = new Scanner(System.in) ) {
-      for (int loop = Integer.valueOf(scanner.nextLine()); loop > 0; loop--) {
-        final String answers = scanner.nextLine();
-        final int[] scores = new int[answers.length()];
+    try ( BufferedReader reader = new BufferedReader(new InputStreamReader(System.in)) ) {
+      final BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(System.out));
 
-        int sum = 0;
-        for (int i = 0; i < answers.length(); i++) {
-          if (answers.charAt(i) == 'O') {
-            sum += (scores[i] = scores[Math.max(0, i - 1)] + 1);
+      for (int loop = Integer.valueOf(reader.readLine()); loop > 0; loop--) {
+        int answer;
+        int total = 0, score = 0;
+        while ((answer = reader.read()) != '\n') {
+          if (answer == 'O') {
+            total += ++score;
           } else {
-            scores[i] = 0;
+            score = 0;
           }
         }
-        System.out.println(sum);
+        writer.write(Integer.toString(total));
+        writer.newLine();
       }
+      writer.flush();
+      writer.close();
+    } catch (NumberFormatException | IOException e) {
+      e.printStackTrace();
     }
   }
 }
