@@ -1,4 +1,4 @@
-package com.wordpress.saecota.oxquiz;
+package io.github.atmost1815.oxquiz;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;

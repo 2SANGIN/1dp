@@ -1,4 +1,4 @@
-package com.wordpress.saecota.digitalcounter;
+package io.github.atmost1815.digitalcounter;
 
 import java.util.Scanner;
 
