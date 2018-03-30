@@ -1,4 +1,4 @@
-package io.github.atmost1815.digitalcounter;
+package io.github.atmost1815.acmicpc.digitalcounter;
 
 import java.util.Scanner;
 

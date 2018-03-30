@@ -1,4 +1,4 @@
-package io.github.atmost1815.oxquiz;
+package io.github.atmost1815.acmicpc.oxquiz;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;

@@ -1,4 +1,4 @@
-package io.github.atmost1815.flymetothealphacentauri;
+package io.github.atmost1815.acmicpc.flymetothealphacentauri;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
