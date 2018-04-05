@@ -9,9 +9,9 @@ import java.io.OutputStreamWriter;
 import java.util.NoSuchElementException;
 import java.util.StringTokenizer;
 
+
 public class Main {
     private static Scanner sc = new Scanner(System.in);
-
     private static BufferedWriter wr = new BufferedWriter(new OutputStreamWriter(System.out));
 
 
