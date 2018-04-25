@@ -51,9 +51,9 @@ public class MathUtil {
     public static List<Integer> getPrimeNumbersSieveOfEratosthenes(int to) {
         getPrimes();
 
-        int offset = primes.get(primes.size() - 1) + 1;
+        int offset = primes.size() > 0 ? primes.get(primes.size() - 1) + 1 : 0;
         while (offset < to) {
-            boolean[] sieve = new boolean[Math.min(to - offset, to / 5)];
+            boolean[] sieve = new boolean[Math.min(to - offset + 1, to / 5)];
 
             for (int prime : primes)
                 for (int natural = Math.max(prime << 1, 2); natural - offset < sieve.length; natural += prime) {
@@ -73,8 +73,6 @@ public class MathUtil {
 
             offset += sieve.length;
         }
-
-
         return primes;
     }
 

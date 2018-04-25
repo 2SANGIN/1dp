@@ -37,9 +37,15 @@ public class Main {
     static class Scanner {
         private BufferedReader reader;
         private StringTokenizer tokenizer;
+        private boolean eof;
 
         Scanner(final InputStream is) {
+            this(is, true);
+        }
+
+        Scanner(final InputStream is, boolean eof) {
             this.reader = new BufferedReader(new InputStreamReader(is));
+            this.eof = eof;
         }
 
         boolean hasMoreTokens() {
@@ -58,9 +64,13 @@ public class Main {
             if (!hasMoreTokens()) {
                 try {
                     StringBuilder builder = new StringBuilder();
-                    int ch;
-                    while ((ch = this.reader.read()) != -1) {
-                        builder.append((char) ch);
+                    if (eof) {
+                        int ch;
+                        while ((ch = this.reader.read()) != -1) {
+                            builder.append((char) ch);
+                        }
+                    } else {
+                        builder.append(this.reader.readLine());
                     }
                     this.tokenizer = new StringTokenizer(builder.toString());
                 } catch (final IOException e) {
