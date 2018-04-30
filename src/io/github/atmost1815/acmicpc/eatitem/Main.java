@@ -13,60 +13,54 @@ public class Main {
     private static Scanner sc = new Scanner(System.in, false);
 
     public static void main(final String[] args) {
-        final char ITEM = '*';
-        final char OBSTACLE = '-';
         int rows = sc.nextInt(), cols = sc.nextInt(), numItems = sc.nextInt(), numObstacles = sc.nextInt();
 
-        Object[][] map = new Object[rows + 1][cols + 1];
-        boolean[][] obsMap = new boolean[rows + 1][cols + 1];
-
+        int[][] dp = new int[rows + 1][cols + 1];
+        boolean[][] map = new boolean[rows + 1][cols + 1];
         final List<Point> items = new ArrayList<>(numItems);
-        final List<Point> obstalces = new ArrayList<>(numObstacles);
 
         for (int i = 0; i < numItems; i++) {
             int r = sc.nextInt(), c = sc.nextInt();
             items.add(new Point(r, c));
-            map[r][c] = ITEM;
         }
         items.add(new Point(rows, cols)); // 목적지
+        items.sort(Point::compareTo);
 
         for (int o = 0; o < numObstacles; o++) {
             int r = sc.nextInt(), c = sc.nextInt();
-            obstalces.add(new Point(r, c));
-            map[r][c] = OBSTACLE;
-            obsMap[r][c] = true;
+            map[r][c] = true;
         }
 
-
-        int ways = 0;
+        int ways = 1;
         Point prevItem = new Point(1, 1);
+        dp[1][0] = 1;
         while (!items.isEmpty()) {
             Point nextItem = items.remove(0);
-            int maxY = nextItem.row;
-            int maxX = nextItem.col;
-//            System.out.print("(" + prevItem.row + "," + prevItem.col + ")");
-//            System.out.println(", (" + maxY + "," + maxX + ")");
-            for (int curY = prevItem.row; curY <= maxY; curY++) {
-                for (int curX = prevItem.col; curX <= maxX; curX++) {
-                    if (obsMap[curY][curX]) continue;
-                    if (!((curY + 1 <= maxY && obsMap[curY + 1][curX]) || (curX + 1 <= maxX && obsMap[curY][curX + 1])) && curY + 1 <= maxY && curX + 1 <= maxX) {
-//                        System.out.println("beep!");
-                        ways += 2;
-                    }
+            for (int curY = prevItem.row; curY <= nextItem.row; curY++) {
+                for (int curX = prevItem.col; curX <= nextItem.col; curX++) {
+                    if (map[curY][curX]) continue;
+                    dp[curY][curX] = dp[curY - 1][curX] + dp[curY][curX - 1];
+                    dp[prevItem.row][prevItem.col] = 1;
                 }
             }
+            ways *= dp[nextItem.row][nextItem.col];
             prevItem = nextItem;
         }
         System.out.println(ways);
     }
 
-    static class Point {
+    static class Point implements Comparable<Point> {
         int row;
         int col;
 
         Point(int row, int col) {
             this.row = row;
             this.col = col;
+        }
+
+        @Override
+        public int compareTo(Main.Point o) {
+            return (this.row + this.col) - (o.row + o.col);
         }
     }
 
