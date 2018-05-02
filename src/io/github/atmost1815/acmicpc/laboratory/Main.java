@@ -12,7 +12,7 @@ import java.util.StringTokenizer;
 public class Main {
     private static Scanner sc = new Scanner(System.in, false);
 
-    static int spreadViruses(final int[][] lab, int maxSafezone, int initialSpace) {
+    static int spreadViruses(final int[][] lab, final int maxSafezone, final int initialSpace, int[][] tmpRecord) {
         // initialize
         int n = lab.length;
         int m = lab[0].length;
@@ -26,38 +26,39 @@ public class Main {
         Stack<Integer> vertY = new Stack<>();
         Stack<Integer> vertX = new Stack<>();
         int infectedSpace = 0;
-        for (int r = 0; r < n; r++) {
-            for (int c = 0; c < m; c++) {
-                if (lab[r][c] == 2) { // virus
-                    infected[r][c] = 0;
-                    vertY.push(r);
-                    vertX.push(c);
-                    while (!vertX.isEmpty()) {
-                        int x = vertX.pop(), y = vertY.pop();
-                        if (x < 0 || m <= x) continue;
-                        if (y < 0 || n <= y) continue;
-                        if (infected[y][x] != 0) continue;
+        for (int index = 0; index < n * m; index++) {
+            final int r = index / m;
+            final int c = index % m;
 
-                        infected[y][x] = 2;
-                        if (initialSpace - (++infectedSpace) < maxSafezone)
-                            return -1;
-                        for (int idx = 0; idx < 4; idx++) {
-                            vertY.push(y + dy[idx]);
-                            vertX.push(x + dx[idx]);
-                        }
+            if (lab[r][c] == 2) { // virus
+                for (int idx = 0; idx < 4; idx++) {
+                    vertY.push(r + dy[idx]);
+                    vertX.push(c + dx[idx]);
+                }
+
+                while (!vertX.isEmpty()) {
+                    int x = vertX.pop(), y = vertY.pop();
+                    if (x < 0 || m <= x) continue;
+                    if (y < 0 || n <= y) continue;
+                    if (infected[y][x] != 0) continue;
+
+                    infected[y][x] = 2;
+                    if (initialSpace - (++infectedSpace) < maxSafezone)
+                        return -1;
+                    for (int idx = 0; idx < 4; idx++) {
+                        vertY.push(y + dy[idx]);
+                        vertX.push(x + dx[idx]);
                     }
                 }
             }
         }
 
-        int safezone = 0;
-        for (int r = 0; r < n; r++) {
-            for (int c = 0; c < m; c++) {
-                if (infected[r][c] == 0)
-                    safezone++;
+        if (tmpRecord != null) {
+            for (int i = 0; i < n; i++) {
+                tmpRecord[i] = Arrays.copyOf(infected[i], m);
             }
         }
-        return safezone;
+        return initialSpace - infectedSpace;
     }
 
     public static void main(final String[] args) {
@@ -71,8 +72,80 @@ public class Main {
                     initialSpace++;
             }
         }
+        initialSpace -= 3; // number of walls
 
-        int maxSafezone = -1;
+        int maxSafezone = 0;
+        int[] wallIdx = new int[3];
+        final int lastWall = wallIdx.length - 1;
+
+        /* set initial position of walls */
+        for (int nthWall = 0; nthWall < lastWall; nthWall++) {
+            if (nthWall > 0 && wallIdx[nthWall - 1] >= wallIdx[nthWall]) {
+                wallIdx[nthWall] = wallIdx[nthWall - 1] + 1;
+            }
+            wallIdx[nthWall] = buildWall(lab, wallIdx[nthWall]);
+        }
+
+        int[][] highRecord = new int[n][];
+        int[][] tmpRecord = new int[n][];
+
+        while (wallIdx[0] + wallIdx.length < n * m) {
+            /* spread virus and count safe zone */
+            while (wallIdx[lastWall] < n * m) {
+                final int y = wallIdx[lastWall] / m;
+                final int x = wallIdx[lastWall] % m;
+
+                if (lab[y][x] == 0) {
+                    lab[y][x] = 3;
+                    int tmpSafezone = spreadViruses(lab, maxSafezone, initialSpace, tmpRecord);
+                    if (tmpSafezone > maxSafezone) {
+                        for (int i = 0; i < n; i++) {
+                            highRecord[i] = Arrays.copyOf(tmpRecord[i], m);
+                        }
+                        print(highRecord, "high record!!");
+                        maxSafezone = tmpSafezone;
+                    }
+                    lab[y][x] = 0;
+                }
+
+                wallIdx[lastWall]++;
+            }
+
+            /*  increment of the index that reached the array size */
+            boolean retry = false;
+            while (retry) {
+                boolean[] up = new boolean[wallIdx.length - 1];
+                for (int nthWall = lastWall; nthWall > 0; nthWall--) {
+                    if (wallIdx[nthWall] == n * m) {
+                        wallIdx[nthWall] = 0;
+
+                        {
+                            int prevWallIdx = wallIdx[nthWall - 1];
+                            if (prevWallIdx < n * m) {
+                                lab[prevWallIdx / m][prevWallIdx % m] = 0; // back-tracking
+                            }
+                        }
+
+                        wallIdx[nthWall - 1]++;
+                        up[nthWall - 1] = true;
+                    }
+                }
+
+                retry = false;
+                for (int nthWall = 0; nthWall < lastWall; nthWall++) {
+                    if (nthWall > 0 && wallIdx[nthWall - 1] >= wallIdx[nthWall]) {
+                        wallIdx[nthWall] = wallIdx[nthWall - 1] + 1;
+                    }
+                    if (up[nthWall]) {
+                        wallIdx[nthWall] = buildWall(lab, wallIdx[nthWall]);
+                        retry = retry || (wallIdx[nthWall] == (n * m));
+                    }
+                }
+            }
+        }
+
+        /*
+        maxSafezone = -1;
         int[][] isolated = new int[n][];
 
         int numOfWalls = 3;
@@ -85,7 +158,7 @@ public class Main {
                 for (int x = 0; x < m; x++) {
                     if (isolated[y][x] != 0) continue;
                     isolated[y][x] = 3;
-                    int safezone = spreadViruses(isolated, maxSafezone, initialSpace);
+                    int safezone = spreadViruses(isolated, maxSafezone, initialSpace - (3 - numOfWalls));
                     if (safezone > maxSafezone) {
                         maxSafezone = safezone;
                         maxY = y;
@@ -106,8 +179,33 @@ public class Main {
             System.out.println(maxSafezone);
             System.out.println();
         }
+        */
 
         System.out.println(maxSafezone);
+    }
+
+    private static int buildWall(int[][] map, int wallIdx) {
+        int n = map.length;
+        int m = map[0].length;
+        while (wallIdx < n * m) {
+            if (map[wallIdx / m][wallIdx % m] == 0) {
+                map[wallIdx / m][wallIdx % m] = 3;
+                break;
+            }
+            wallIdx++;
+        }
+        return wallIdx;
+    }
+
+    private static void print(int[][] map, String title) {
+        System.out.println("<< " + title + " >>");
+        for (int r = 0; r < map.length; r++) {
+            for (int c = 0; c < map[0].length; c++) {
+                System.out.print(map[r][c] + " ");
+            }
+            System.out.println();
+        }
+        System.out.println();
     }
 
     static class Scanner {
