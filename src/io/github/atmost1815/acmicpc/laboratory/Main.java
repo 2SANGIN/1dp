@@ -12,7 +12,7 @@ import java.util.StringTokenizer;
 public class Main {
     private static Scanner sc = new Scanner(System.in, false);
 
-    static int spreadViruses(final int[][] lab, final int maxSafezone, final int initialSpace, int[][] tmpRecord) {
+    private static int spreadViruses(final int[][] lab, final int maxSafezone, final int initialSpace, int[][] tmpRecord) {
         // initialize
         int n = lab.length;
         int m = lab[0].length;
@@ -112,74 +112,32 @@ public class Main {
             }
 
             /*  increment of the index that reached the array size */
-            boolean retry = false;
-            while (retry) {
-                boolean[] up = new boolean[wallIdx.length - 1];
-                for (int nthWall = lastWall; nthWall > 0; nthWall--) {
-                    if (wallIdx[nthWall] == n * m) {
-                        wallIdx[nthWall] = 0;
+            boolean[] up = new boolean[wallIdx.length - 1];
+            for (int nthWall = lastWall; nthWall > 0; nthWall--) {
+                if (wallIdx[nthWall] == n * m) {
+                    wallIdx[nthWall] = 0;
 
-                        {
-                            int prevWallIdx = wallIdx[nthWall - 1];
-                            if (prevWallIdx < n * m) {
-                                lab[prevWallIdx / m][prevWallIdx % m] = 0; // back-tracking
-                            }
+                    {
+                        int prevWallIdx = wallIdx[nthWall - 1];
+                        if (prevWallIdx < n * m) {
+                            lab[prevWallIdx / m][prevWallIdx % m] = 0; // back-tracking
                         }
-
-                        wallIdx[nthWall - 1]++;
-                        up[nthWall - 1] = true;
                     }
+
+                    wallIdx[nthWall - 1]++;
+                    up[nthWall - 1] = true;
                 }
+            }
 
-                retry = false;
-                for (int nthWall = 0; nthWall < lastWall; nthWall++) {
-                    if (nthWall > 0 && wallIdx[nthWall - 1] >= wallIdx[nthWall]) {
-                        wallIdx[nthWall] = wallIdx[nthWall - 1] + 1;
-                    }
-                    if (up[nthWall]) {
-                        wallIdx[nthWall] = buildWall(lab, wallIdx[nthWall]);
-                        retry = retry || (wallIdx[nthWall] == (n * m));
-                    }
+            for (int nthWall = 0; nthWall < lastWall; nthWall++) {
+                if (nthWall > 0 && wallIdx[nthWall - 1] >= wallIdx[nthWall]) {
+                    wallIdx[nthWall] = wallIdx[nthWall - 1] + 1;
+                }
+                if (up[nthWall]) {
+                    wallIdx[nthWall] = buildWall(lab, wallIdx[nthWall]);
                 }
             }
         }
-
-        /*
-        maxSafezone = -1;
-        int[][] isolated = new int[n][];
-
-        int numOfWalls = 3;
-        while (numOfWalls-- > 0) {
-            for (int r = 0; r < n; r++)
-                isolated[r] = Arrays.copyOf(lab[r], m);
-
-            int maxX = 0, maxY = 0;
-            for (int y = 0; y < n; y++) {
-                for (int x = 0; x < m; x++) {
-                    if (isolated[y][x] != 0) continue;
-                    isolated[y][x] = 3;
-                    int safezone = spreadViruses(isolated, maxSafezone, initialSpace - (3 - numOfWalls));
-                    if (safezone > maxSafezone) {
-                        maxSafezone = safezone;
-                        maxY = y;
-                        maxX = x;
-                    }
-                    isolated[y][x] = 0;
-                }
-            }
-            lab[maxY][maxX] = 3;
-
-            for (int r = 0; r < n; r++) {
-                for (int c = 0; c < m; c++) {
-                    System.out.print(lab[r][c] + " ");
-                }
-                System.out.println();
-            }
-            System.out.println();
-            System.out.println(maxSafezone);
-            System.out.println();
-        }
-        */
 
         System.out.println(maxSafezone);
     }
@@ -199,9 +157,9 @@ public class Main {
 
     private static void print(int[][] map, String title) {
         System.out.println("<< " + title + " >>");
-        for (int r = 0; r < map.length; r++) {
+        for (int[] row/**/ : map) {
             for (int c = 0; c < map[0].length; c++) {
-                System.out.print(map[r][c] + " ");
+                System.out.print(row[c] + " ");
             }
             System.out.println();
         }
