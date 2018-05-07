@@ -10,6 +10,7 @@ import java.util.Stack;
 import java.util.StringTokenizer;
 
 public class Main {
+    private static final int NEW_WALL = '*';
     private static Scanner sc = new Scanner(System.in, false);
 
     private static int spreadViruses(final int[][] lab, final int maxSafezone, final int initialSpace, int[][] tmpRecord) {
@@ -63,6 +64,7 @@ public class Main {
 
     public static void main(final String[] args) {
         int n = sc.nextInt(), m = sc.nextInt();
+        final int lastIndex = n * m;
         int[][] lab = new int[n][m];
         int initialSpace = 0;
         for (int r = 0; r < n; r++) {
@@ -80,7 +82,7 @@ public class Main {
 
         /* set initial position of walls */
         for (int nthWall = 0; nthWall < lastWall; nthWall++) {
-            if (nthWall > 0 && wallIdx[nthWall - 1] >= wallIdx[nthWall]) {
+            if (nthWall > 0) {
                 wallIdx[nthWall] = wallIdx[nthWall - 1] + 1;
             }
             wallIdx[nthWall] = buildWall(lab, wallIdx[nthWall]);
@@ -88,15 +90,14 @@ public class Main {
 
         int[][] highRecord = new int[n][];
         int[][] tmpRecord = new int[n][];
-
-        while (wallIdx[0] + wallIdx.length < n * m) {
+        while (wallIdx[0] < lastIndex) {
             /* spread virus and count safe zone */
-            while (wallIdx[lastWall] < n * m) {
+            while (wallIdx[lastWall] < lastIndex) {
                 final int y = wallIdx[lastWall] / m;
                 final int x = wallIdx[lastWall] % m;
 
                 if (lab[y][x] == 0) {
-                    lab[y][x] = 3;
+                    lab[y][x] = NEW_WALL;
                     int tmpSafezone = spreadViruses(lab, maxSafezone, initialSpace, tmpRecord);
                     if (tmpSafezone > maxSafezone) {
                         for (int i = 0; i < n; i++) {
@@ -105,36 +106,32 @@ public class Main {
                         print(highRecord, "high record!!");
                         maxSafezone = tmpSafezone;
                     }
-                    lab[y][x] = 0;
+                    lab[y][x] = 0; // back-tracking
                 }
 
                 wallIdx[lastWall]++;
             }
 
-            /*  increment of the index that reached the array size */
-            boolean[] up = new boolean[wallIdx.length - 1];
+            /*  carrying of the index that reached the array size */
             for (int nthWall = lastWall; nthWall > 0; nthWall--) {
-                if (wallIdx[nthWall] == n * m) {
-                    wallIdx[nthWall] = 0;
-
-                    {
-                        int prevWallIdx = wallIdx[nthWall - 1];
-                        if (prevWallIdx < n * m) {
-                            lab[prevWallIdx / m][prevWallIdx % m] = 0; // back-tracking
-                        }
-                    }
-
+                if (wallIdx[nthWall] == lastIndex) { // carrying occured
+                    lab[wallIdx[nthWall - 1] / m][wallIdx[nthWall - 1] % m] = 0; // back-tracking
                     wallIdx[nthWall - 1]++;
-                    up[nthWall - 1] = true;
+                    wallIdx[nthWall - 1] = buildWall(lab, wallIdx[nthWall - 1]);
                 }
             }
 
-            for (int nthWall = 0; nthWall < lastWall; nthWall++) {
-                if (nthWall > 0 && wallIdx[nthWall - 1] >= wallIdx[nthWall]) {
+            /* set initial position of walls */
+            for (int nthWall = 1; nthWall < wallIdx.length; nthWall++) {
+                if (wallIdx[nthWall] == lastIndex) {
                     wallIdx[nthWall] = wallIdx[nthWall - 1] + 1;
-                }
-                if (up[nthWall]) {
-                    wallIdx[nthWall] = buildWall(lab, wallIdx[nthWall]);
+                    if (nthWall < lastWall) {
+                        wallIdx[nthWall] = buildWall(lab, wallIdx[nthWall]);
+                        if (wallIdx[nthWall] == lastIndex) {
+                            wallIdx[0] = lastIndex;
+                            break;
+                        }
+                    }
                 }
             }
         }
@@ -145,9 +142,11 @@ public class Main {
     private static int buildWall(int[][] map, int wallIdx) {
         int n = map.length;
         int m = map[0].length;
-        while (wallIdx < n * m) {
+        int lastIndex = n * m;
+
+        while (wallIdx < lastIndex) {
             if (map[wallIdx / m][wallIdx % m] == 0) {
-                map[wallIdx / m][wallIdx % m] = 3;
+                map[wallIdx / m][wallIdx % m] = NEW_WALL;
                 break;
             }
             wallIdx++;
@@ -156,10 +155,16 @@ public class Main {
     }
 
     private static void print(int[][] map, String title) {
+    }
+
+    private static void print2(int[][] map, String title) {
         System.out.println("<< " + title + " >>");
-        for (int[] row/**/ : map) {
+        for (int[] row : map) {
             for (int c = 0; c < map[0].length; c++) {
-                System.out.print(row[c] + " ");
+                if (row[c] == NEW_WALL)
+                    System.out.print((char) NEW_WALL + " ");
+                else
+                    System.out.print(row[c] + " ");
             }
             System.out.println();
         }
